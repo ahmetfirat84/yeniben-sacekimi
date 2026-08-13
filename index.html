@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yeniben — Saç Ekimi MVP Prototip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---- Yeniben brand theme (Drive: New Design/Nebal color guide) ----
+     Burnt Sienna #EA6852 (primary) · Hit Pink #FFA489 (peach)
+     Fun Green #006548 (trust) · Indigo Blue #3D7CC9 · Feijoa #AADA91 ---- */
+  :root{
+    --bg:#f6efe9;             /* warm peach-tinted ground */
+    --surface:#ffffff;
+    --surface-2:#fbf3ee;      /* faint peach panel */
+    --ink:#241a16;            /* warm near-black */
+    --muted:#8a7a72;          /* warm grey */
+    --line:#efe2da;           /* warm hairline */
+    --accent:#e2543c;         /* Burnt Sienna, deepened for white-text AA-large */
+    --accent-ink:#ffffff;
+    --accent-soft:#fdeae4;    /* Hit Pink wash */
+    --peach:#ffa489;          /* Hit Pink */
+    --verified:#006548;       /* Fun Green — trust/doğrulama */
+    --verified-soft:#e2f0e9;
+    --blue:#3d7cc9;           /* Indigo Blue — external links */
+    --warn-soft:#fdf1e3;
+    --warn-ink:#9a6a1c;
+    --radius:16px;
+    --radius-sm:11px;
+    --shadow:0 1px 2px rgba(60,30,20,.05),0 6px 20px rgba(60,30,20,.07);
+    --pad:18px;
+    --frame-w:430px;
+    --font-display:"Playfair Display",Georgia,"Times New Roman",serif;
+    font-family:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{display:flex;justify-content:center;min-height:100vh;}
+
+  /* Phone frame */
+  #frame{
+    width:100%;max-width:var(--frame-w);background:var(--surface-2);
+    min-height:100vh;position:relative;overflow:hidden;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  @media(min-width:480px){
+    body{padding:22px 0;align-items:flex-start;}
+    #frame{min-height:calc(100vh - 44px);border-radius:34px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.22);}
+  }
+
+  /* Screen system */
+  .screen{display:none;flex-direction:column;min-height:100vh;}
+  @media(min-width:480px){.screen{min-height:calc(100vh - 44px);}}
+  .screen.active{display:flex;animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .pad{padding:var(--pad);}
+
+  /* Top bar */
+  .topbar{display:flex;align-items:center;gap:12px;padding:14px var(--pad);background:var(--surface);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);}
+  .topbar .ttl{font-weight:600;font-size:16px;flex:1;text-align:center;}
+  .wordmark{font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent);letter-spacing:-.01em;line-height:1;}
+  .wordmark .em{color:var(--peach);}
+  .wordmark-sub{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.02em;margin-top:2px;}
+  .iconbtn{width:38px;height:38px;border-radius:11px;border:none;background:var(--surface-2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--ink);flex:none;}
+  .iconbtn:active{background:var(--line);}
+  .skip{margin-left:auto;background:none;border:none;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;padding:8px;}
+
+  /* Progress */
+  .progress{height:4px;background:var(--line);border-radius:99px;overflow:hidden;margin:0 var(--pad);}
+  .progress > i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease;}
+
+  h1{font-family:var(--font-display);font-size:27px;line-height:1.2;margin:22px 0 6px;font-weight:700;letter-spacing:-.005em;}
+  h2{font-family:var(--font-display);font-size:21px;margin:26px 0 12px;font-weight:700;letter-spacing:-.005em;}
+  .sub{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 20px;}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
+
+  /* Choice tiles (typeform) */
+  .choices{display:flex;flex-direction:column;gap:12px;}
+  .choice{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);cursor:pointer;font-size:16px;font-weight:500;transition:.15s;text-align:left;width:100%;}
+  .choice .ic{width:44px;height:44px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none;}
+  .choice:active{transform:scale(.99);}
+  .choice.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .choice.sel .ic{background:#fff;}
+  .choice .chk{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;position:relative;}
+  .choice.sel .chk{border-color:var(--accent);background:var(--accent);}
+  .choice.sel .chk:after{content:"✓";position:absolute;inset:0;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid2 .choice{flex-direction:column;align-items:flex-start;gap:10px;text-align:left;}
+  .grid2 .choice .chk{margin-left:0;position:absolute;top:14px;right:14px;}
+  .grid2 .choice{position:relative;padding-right:44px;}
+
+  /* Detail add (concern) */
+  .detail-add{margin-top:14px;}
+  .detail-add textarea{width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px;font-size:15px;font-family:inherit;resize:none;background:var(--surface);}
+
+  /* Bottom bar (typeform next) */
+  .bottombar{padding:14px var(--pad) calc(14px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border-radius:14px;font-size:16px;font-weight:600;border:none;cursor:pointer;transition:.15s;}
+  .btn-primary{background:var(--accent);color:var(--accent-ink);}
+  .btn-primary:active{filter:brightness(.94);}
+  .btn-primary:disabled{opacity:.4;pointer-events:none;}
+  .btn-outline{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);}
+
+  /* Neome */
+  .bubble{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;font-size:15px;line-height:1.55;box-shadow:var(--shadow);}
+  .bubble.assistant{background:var(--accent-soft);border-color:transparent;}
+  .avatar-neome{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none;}
+  .neome-row{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start;}
+  .disclaimer{border:1.5px dashed var(--line);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--muted);display:flex;gap:9px;align-items:flex-start;margin:6px 0 18px;background:var(--surface);}
+  .src{color:var(--accent);text-decoration:underline;font-size:13px;}
+  .agentbox{display:flex;gap:9px;align-items:center;border:1.5px solid var(--line);border-radius:99px;padding:6px 6px 6px 16px;background:var(--surface);margin-top:16px;}
+  .agentbox input{flex:1;border:none;outline:none;font-size:14px;background:transparent;}
+  .agentbox .send{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:16px;cursor:pointer;flex:none;}
+
+  /* Cards / list */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:.15s;}
+  .card:active{transform:scale(.995);}
+  .card-photo{height:132px;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);display:flex;align-items:center;justify-content:center;color:#c76a52;font-size:34px;position:relative;overflow:hidden;}
+  .card-photo .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .brandmark{width:64px;height:64px;border-radius:14px;background:#fff;padding:9px;object-fit:contain;box-shadow:0 2px 8px rgba(60,30,20,.12);}
+  .favi{width:18px;height:18px;border-radius:4px;vertical-align:-4px;margin-right:5px;}
+  .logo-avatar{background:#fff!important;padding:6px;object-fit:contain;}
+  .card-body{padding:14px;}
+  .type-badge{position:absolute;top:10px;left:10px;background:rgba(28,27,25,.72);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:99px;backdrop-filter:blur(4px);}
+  .avatar{width:52px;height:52px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none;border:1px solid var(--line);}
+  .avatar.round{border-radius:50%;}
+  .avatar.square{border-radius:12px;}
+  .name{font-weight:700;font-size:17px;letter-spacing:-.01em;}
+  .row{display:flex;align-items:center;gap:10px;}
+  .meta{color:var(--muted);font-size:13.5px;}
+  .dot{color:var(--line);}
+  .price{font-weight:700;font-size:15px;}
+  .price small{font-weight:500;color:var(--muted);}
+
+  /* external link (google) */
+  .ext{display:inline-flex;align-items:center;gap:5px;color:var(--blue);text-decoration:underline;font-size:13.5px;font-weight:600;cursor:pointer;}
+  .ext:after{content:"↗";text-decoration:none;font-size:12px;}
+
+  .verified-line{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--verified);background:var(--verified-soft);padding:4px 9px;border-radius:99px;font-weight:600;}
+
+  /* filter chips */
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;-webkit-overflow-scrolling:touch;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:none;padding:8px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .segment{display:flex;background:var(--surface-2);border-radius:12px;padding:4px;gap:4px;margin:2px 0 14px;}
+  .segment button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .segment button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+  .sortbar{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--muted);margin:2px 0 14px;}
+  .sortbar b{color:var(--ink);}
+
+  /* profile tabs (anchor) */
+  .tabs{display:flex;gap:4px;overflow-x:auto;background:var(--surface);position:sticky;top:65px;z-index:15;border-bottom:1px solid var(--line);padding:0 10px;-webkit-overflow-scrolling:touch;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs button{flex:none;border:none;background:none;padding:13px 12px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;}
+  .tabs button.on{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .section{padding:20px var(--pad);border-bottom:8px solid var(--bg);scroll-margin-top:112px;}
+  .section:last-of-type{border-bottom:none;}
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}
+  .stat{flex:1;min-width:88px;background:var(--surface-2);border-radius:12px;padding:12px;text-align:center;}
+  .stat b{display:block;font-size:18px;}
+  .stat span{font-size:12px;color:var(--muted);}
+
+  .kv{display:flex;flex-direction:column;gap:16px;}
+  .kv h4{margin:0 0 6px;font-size:14px;color:var(--muted);font-weight:600;}
+  .kv ul{margin:0;padding-left:18px;font-size:15px;line-height:1.6;}
+  .empty{color:var(--muted);font-style:italic;font-size:14px;background:var(--surface-2);padding:12px;border-radius:11px;}
+
+  .consult-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .consult{border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--surface);}
+  .consult .h{font-weight:700;font-size:14px;margin-bottom:4px;}
+  .consult .p{font-size:13px;color:var(--muted);}
+
+  .link-card{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;}
+  .link-card .arw{margin-left:auto;color:var(--muted);}
+
+  .team-strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .team-strip::-webkit-scrollbar{display:none;}
+  .team-member{flex:none;width:96px;text-align:center;}
+  .team-member .avatar{margin:0 auto 6px;}
+  .team-member .tn{font-size:13px;font-weight:600;line-height:1.2;}
+  .team-member .tr{font-size:11.5px;color:var(--muted);}
+
+  .lead-doc{border:2px solid var(--accent);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--accent-soft);}
+
+  .photo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .photo-grid > div{aspect-ratio:1;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);border-radius:9px;}
+
+  /* experiences */
+  .exp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .exp .tag{display:inline-block;background:var(--verified-soft);color:var(--verified);font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:.04em;}
+  .timeline{margin:12px 0 0;padding-left:14px;border-left:2px solid var(--line);}
+  .timeline .pt{position:relative;padding:0 0 12px 12px;font-size:13.5px;}
+  .timeline .pt:before{content:"";position:absolute;left:-19px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .timeline .pt b{display:block;font-size:12px;color:var(--muted);font-weight:600;}
+  .prog-mini{font-size:12px;color:var(--muted);margin-top:6px;}
+
+  .review{border-bottom:1px solid var(--line);padding:14px 0;}
+  .review:last-child{border-bottom:none;}
+  .review .top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .review .worth{background:var(--verified-soft);color:var(--verified);font-weight:700;font-size:10.5px;padding:2px 7px;border-radius:99px;}
+  .review .crit{background:var(--warn-soft);color:var(--warn-ink);}
+  .review p{margin:0;font-size:14.5px;line-height:1.5;}
+  .stars{color:#d99b1f;font-size:13px;letter-spacing:1px;}
+
+  /* sticky dual CTA */
+  .sticky-cta{position:sticky;bottom:0;display:flex;gap:10px;padding:12px var(--pad) calc(12px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);z-index:18;}
+  .sticky-cta .btn{flex:1;padding:14px;font-size:15px;}
+
+  /* comparison table */
+  .cmp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+  .cmp{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:13px;}
+  .cmp th,.cmp td{border-bottom:1px solid var(--line);padding:12px 12px;text-align:left;vertical-align:top;}
+  .cmp th{background:var(--surface-2);position:sticky;left:0;z-index:2;font-weight:600;color:var(--muted);white-space:nowrap;min-width:118px;}
+  .cmp thead th{background:var(--surface);color:var(--ink);font-size:13.5px;top:0;}
+  .cmp thead th:first-child{z-index:3;}
+  .cmp td{min-width:158px;}
+  .cmp .pk{font-weight:700;}
+  .cmp .big{font-size:16px;font-weight:800;}
+  .cmp .flag{color:var(--warn-ink);font-weight:600;}
+  .note-card{background:var(--warn-soft);border-radius:12px;padding:13px 14px;font-size:13px;color:var(--warn-ink);line-height:1.5;margin-top:14px;}
+
+  /* upsell */
+  .addon{display:flex;align-items:center;gap:13px;padding:15px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;margin-bottom:11px;}
+  .addon.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .addon .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);flex:none;position:relative;}
+  .addon.sel .box{background:var(--accent);border-color:var(--accent);}
+  .addon.sel .box:after{content:"✓";position:absolute;inset:0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .addon .info{flex:1;}
+  .addon .an{font-weight:600;font-size:15px;}
+  .addon .ad{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .addon .ap{font-weight:700;font-size:15px;white-space:nowrap;}
+  .summary{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-top:8px;}
+  .summary .line{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;}
+  .summary .disc{color:var(--verified);font-weight:600;}
+  .summary .tot{border-top:1px dashed var(--line);margin-top:8px;padding-top:10px;font-size:18px;font-weight:800;}
+
+  /* home / demo launcher */
+  .launch .l-item{display:flex;align-items:center;gap:12px;padding:15px;background:var(--surface);border:1px solid var(--line);border-radius:13px;margin-bottom:10px;cursor:pointer;}
+  .launch .l-item b{font-size:15px;}
+  .launch .l-item span{font-size:12.5px;color:var(--muted);display:block;margin-top:1px;}
+  .launch .l-num{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;}
+
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-size:13.5px;z-index:100;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;bottom:104px;}
+
+  .spacer{height:8px;}
+  .divider-lbl{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin:22px 0 10px;}
+</style>
+</head>
+<body>
+<div id="frame">
+
+  <!-- ============ 0. LAUNCHER (demo index) ============ -->
+  <section class="screen active" id="s-home">
+    <div class="topbar" style="justify-content:center">
+      <div style="text-align:center">
+        <div class="wordmark">yeniben<span class="em">.</span></div>
+        <div class="wordmark-sub">SAÇ EKİMİ</div>
+      </div>
+    </div>
+    <div class="scroll pad launch">
+      <p class="eyebrow">MVP Prototip</p>
+      <h1 style="margin-top:6px">Kaan'ın yolculuğu</h1>
+      <p class="sub">Yeniben marka teması + <b>gerçek klinik verisi</b>: resmi web siteleri, doğrulanmış puanlar (RealSelf/Trustpilot/Dr.Visor), adresler ve fiyatlar. Yorum/site linkleri gerçekten açılır. Akışı baştan başlat ya da bir ekrana atla.</p>
+      <button class="btn btn-primary" style="margin-bottom:18px" onclick="go('s-tf1')">Akışı baştan başlat →</button>
+      <div class="divider-lbl">Ekranlara doğrudan git</div>
+      <div class="l-item" onclick="go('s-tf1')"><div class="l-num">1</div><div><b>Typeform tanışma</b><span>4 ekran · atlanabilir</span></div></div>
+      <div class="l-item" onclick="go('s-neome')"><div class="l-num">2</div><div><b>Neome sentez</b><span>AI asistan kişisel özet</span></div></div>
+      <div class="l-item" onclick="go('s-list')"><div class="l-num">3</div><div><b>Keşif listesi</b><span>Doktor + klinik karma</span></div></div>
+      <div class="l-item" onclick="go('s-doctor')"><div class="l-num">4</div><div><b>Doktor profili</b><span>Dr. Emrah Cinik</span></div></div>
+      <div class="l-item" onclick="go('s-clinic')"><div class="l-num">5</div><div><b>Klinik profili</b><span>Cinik Hospital</span></div></div>
+      <div class="l-item" onclick="go('s-compare')"><div class="l-num">6</div><div><b>Paket karşılaştırma</b><span>Cosmedica 3 paket</span></div></div>
+      <div class="l-item" onclick="go('s-upsell')"><div class="l-num">7</div><div><b>Ek paket seçimi</b><span>Upsell · opsiyonel</span></div></div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- ============ 1. TYPEFORM ============ -->
+  <!-- 1.1 hair type -->
+  <section class="screen" id="s-tf1">
+    <div class="topbar" style="border:none;background:transparent">
+      <button class="iconbtn" onclick="go('s-home')">←</button>
+      <button class="skip" onclick="go('s-neome')">Atla</button>
+    </div>
+    <div class="progress"><i style="width:25%"></i></div>
+    <div class="scroll pad">
+      <h1>Saç tipin nasıl?</h1>
+      <p class="sub">Sana en yakın seçeneği işaretle. Dilediğinde değiştirebilirsin.</p>
+      <div class="choices" data-single>
+        <button class="choice" onclick="pick(this)"><span class="ic">〰️</span> Düz <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">🌊</span> Dalgalı <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">🌀</span> Kıvırcık <span class="chk"></span></button>
+      </div>
+    </div>
+    <div class="bottombar"><button class="btn btn-primary" onclick="go('s-tf2')">Devam et</button></div>
+  </section>
+
+  <!-- 1.2 concern -->
+  <section class="screen" id="s-tf2">
+    <div class="topbar" style="border:none;background:transparent">
+      <button class="iconbtn" onclick="go('s-tf1')">←</button>
+      <button class="skip" onclick="go('s-neome')">Atla</button>
+    </div>
+    <div class="progress"><i style="width:50%"></i></div>
+    <div class="scroll pad">
+      <h1>Seni ne getirdi?</h1>
+      <p class="sub">Birden fazla seçebilirsin. Bu bir teşhis değil — sadece seni daha iyi anlamak için.</p>
+      <div class="grid2" data-multi>
+        <button class="choice" onclick="pickMulti(this)"><span class="ic">◔</span> Şakaklarda geri çekilme <span class="chk"></span></button>
+        <button class="choice" onclick="pickMulti(this)"><span class="ic">○</span> Tepede seyrelme <span class="chk"></span></button>
+        <button class="choice" onclick="pickMulti(this)"><span class="ic">◇</span> Genel incelme <span class="chk"></span></button>
+        <button class="choice" onclick="pickMulti(this)"><span class="ic">▽</span> Ön saç çizgisi <span class="chk"></span></button>
+      </div>
+      <div class="detail-add">
+        <textarea rows="2" placeholder="İstersen birkaç kelimeyle ekle (opsiyonel)"></textarea>
+      </div>
+    </div>
+    <div class="bottombar"><button class="btn btn-primary" onclick="go('s-tf3')">Devam et</button></div>
+  </section>
+
+  <!-- 1.3 timing -->
+  <section class="screen" id="s-tf3">
+    <div class="topbar" style="border:none;background:transparent">
+      <button class="iconbtn" onclick="go('s-tf2')">←</button>
+      <button class="skip" onclick="go('s-neome')">Atla</button>
+    </div>
+    <div class="progress"><i style="width:75%"></i></div>
+    <div class="scroll pad">
+      <h1>Ne zaman düşünüyorsun?</h1>
+      <p class="sub">Aciliyet yok — sadece nerede olduğunu bilelim.</p>
+      <div class="choices" data-single>
+        <button class="choice" onclick="pick(this)"><span class="ic">⚡</span> Hemen <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">📅</span> 1–3 ay içinde <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">🗓️</span> Bu yıl <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">🔎</span> Sadece araştırıyorum <span class="chk"></span></button>
+      </div>
+    </div>
+    <div class="bottombar"><button class="btn btn-primary" onclick="go('s-tf4')">Devam et</button></div>
+  </section>
+
+  <!-- 1.4 budget -->
+  <section class="screen" id="s-tf4">
+    <div class="topbar" style="border:none;background:transparent">
+      <button class="iconbtn" onclick="go('s-tf3')">←</button>
+      <button class="skip" onclick="go('s-neome')">Atla</button>
+    </div>
+    <div class="progress"><i style="width:100%"></i></div>
+    <div class="scroll pad">
+      <h1>Bütçe aralığın?</h1>
+      <p class="sub">Kliniği sana göre sıralamak için. Rakam vermek zorunda değilsin.</p>
+      <div class="choices" data-single>
+        <button class="choice" onclick="pick(this)"><span class="ic">₺</span> 60.000 – 100.000 TL <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">₺₺</span> 100.000 – 150.000 TL <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">₺₺₺</span> 150.000 TL ve üzeri <span class="chk"></span></button>
+        <button class="choice" onclick="pick(this)"><span class="ic">✦</span> Bütçe önceliğim değil <span class="chk"></span></button>
+      </div>
+    </div>
+    <div class="bottombar"><button class="btn btn-primary" onclick="go('s-neome')">Sonuçları gör</button></div>
+  </section>
+
+  <!-- ============ 2. NEOME ============ -->
+  <section class="screen" id="s-neome">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-tf4')">←</button>
+      <div class="ttl">Neome</div>
+      <button class="iconbtn" onclick="go('s-home')" style="visibility:hidden">·</button>
+    </div>
+    <div class="scroll pad">
+      <div class="neome-row">
+        <div class="avatar-neome">N</div>
+        <div class="bubble">Seni dinledim 👋 Düz saç · <b>şakaklarda geri çekilme + tepede hafif seyrelme</b> · yakın zamanda düşünüyorsun · bütçe senin için belirleyici değil.</div>
+      </div>
+      <div class="neome-row">
+        <div class="avatar-neome">N</div>
+        <div class="bubble assistant">Anlattığın patern, sektörde <b>izole/sınırlı</b> olarak tanımlanan gruba yakın görünüyor — geniş bir kellik paterninden farklı. Bu tür durumlarda uygun teknik ve greft sayısı ancak <b>canlı muayenede donör yoğunluğuna bakılarak</b> netleşir; fotoğraftan kesin teknik öneren bir yaklaşım tahmin yapıyor demektir.
+          <div style="margin-top:8px"><span class="src">Kaynak: Saç Ekimi Birimleri Yönetmeliği →</span></div>
+        </div>
+      </div>
+      <div class="disclaimer"><span>ℹ️</span><span>Neome tıbbi teşhis veya tedavi önerisi vermez. Buradaki bilgiler genel bağlam içindir.</span></div>
+
+      <button class="btn btn-outline" style="margin-bottom:11px" onclick="toast('İleride: ücretli bağımsız uzman katmanı')">🩺 Bağımsız uzmanla görüş</button>
+      <button class="btn btn-primary" onclick="go('s-list')">🔍 Doğrulanmış klinikleri keşfet</button>
+
+      <div class="agentbox">
+        <input placeholder="Neome'a sor: “bana en yakın 3 kliniği bul”">
+        <button class="send" onclick="go('s-list')">→</button>
+      </div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. DISCOVERY LIST ============ -->
+  <section class="screen" id="s-list">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-neome')">←</button>
+      <div class="ttl">Doğrulanmış klinikler</div>
+      <button class="iconbtn" onclick="toast('Harita — sonraki faz')">🗺️</button>
+    </div>
+    <div class="scroll pad">
+      <div class="segment" id="typeSeg">
+        <button class="on" onclick="filterType(this,'all')">Tümü</button>
+        <button onclick="filterType(this,'doctor')">Doktorlar</button>
+        <button onclick="filterType(this,'clinic')">Klinikler</button>
+      </div>
+      <div class="chips">
+        <div class="chip" onclick="this.classList.toggle('on')">FUE</div>
+        <div class="chip" onclick="this.classList.toggle('on')">Safir</div>
+        <div class="chip" onclick="this.classList.toggle('on')">DHI</div>
+        <div class="chip" onclick="this.classList.toggle('on')">Robotik</div>
+      </div>
+      <div class="sortbar"><span>Sıralama: <b>Sana uygunluk</b></span><span>7 sonuç</span></div>
+
+      <div id="listItems" style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- Cinik Hospital (clinic) -->
+        <div class="card" data-type="clinic" onclick="go('s-clinic')">
+          <div class="card-photo"><img class="brandmark" src="https://www.google.com/s2/favicons?sz=128&domain=emrahcinik.com" alt="Cinik Hospital"><span class="type-badge">Klinik</span></div>
+          <div class="card-body">
+            <div class="name">Cinik Hospital</div>
+            <div class="meta" style="margin:2px 0 8px">İstanbul, Beşiktaş</div>
+            <div class="row" style="justify-content:space-between">
+              <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/emrahcinik.com')">★ 4.9 · 5.800+ (Trustpilot)</span>
+              <span class="price">€3.090'dan</span>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:9px">
+              <span class="verified-line">✓ Faaliyet izinli</span>
+              <span class="ext" onclick="openExt(event,'https://www.emrahcinik.com')">emrahcinik.com</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dr. Emrah Cinik (doctor) -->
+        <div class="card" data-type="doctor" onclick="go('s-doctor')">
+          <div class="card-body">
+            <div class="row">
+              <div class="avatar round">👨‍⚕️</div>
+              <div style="flex:1">
+                <div class="name">Dr. Emrah Cinik</div>
+                <div class="meta">Cinik Hospital · 20+ yıl deneyim</div>
+              </div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:10px">
+              <span class="ext" onclick="openExt(event,'https://www.realself.com/dr/emrah-cinik-besiktas-istanbul-turkey')">★ 4.9 · 1.673 (RealSelf)</span>
+              <span class="verified-line">✓ Doğrulandı</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cosmedica (clinic) -->
+        <div class="card" data-type="clinic" onclick="go('s-compare')">
+          <div class="card-photo"><img class="hero-photo" src="https://cosmedica.com/wp-content/uploads/2023/08/cosmedica-dr-acar.png" alt="Cosmedica — Dr. Levent Acar" onerror="this.style.display='none'"><span class="type-badge">Klinik</span></div>
+          <div class="card-body">
+            <div class="name">Cosmedica</div>
+            <div class="meta" style="margin:2px 0 8px">İstanbul, Şişli · Dr. Levent Acar liderliğinde</div>
+            <div class="row" style="justify-content:space-between">
+              <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/cosmedica.com')">★ 4.8 · 629 (WhatClinic)</span>
+              <span class="price">€2.550'den</span>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:9px">
+              <span class="verified-line">✓ Faaliyet izinli</span>
+              <span class="ext" onclick="openExt(event,'https://cosmedica.com')">cosmedica.com</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Este Medical Group (clinic) -->
+        <div class="card" data-type="clinic" onclick="toast('Este Medical Group profili — aynı klinik şablonu')">
+          <div class="card-photo" style="background:linear-gradient(135deg,#ffd9cc,#ffbfa8)"><img class="brandmark" src="https://www.google.com/s2/favicons?sz=128&domain=estemedicalgroup.com" alt="Este Medical Group"><span class="type-badge">Klinik</span></div>
+          <div class="card-body">
+            <div class="name">Este Medical Group</div>
+            <div class="meta" style="margin:2px 0 8px">İstanbul · 10+ yıl · 20.000+ işlem</div>
+            <div class="row" style="justify-content:space-between">
+              <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/esteinturkey.com')">★ 4.9 · Trustpilot</span>
+              <span class="meta">Fiyat görüşmede netleşir</span>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:9px">
+              <span class="verified-line">✓ Faaliyet izinli</span>
+              <span class="ext" onclick="openExt(event,'https://www.estemedicalgroup.com')">estemedicalgroup.com</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dr. Serkan Aygın (doctor) -->
+        <div class="card" data-type="doctor" onclick="toast('Dr. Serkan Aygın profili — aynı doktor şablonu')">
+          <div class="card-body">
+            <div class="row">
+              <div class="avatar round">👨‍⚕️</div>
+              <div style="flex:1">
+                <div class="name">Dr. Serkan Aygın</div>
+                <div class="meta">Serkan Aygın Clinic · Dermatoloji uzmanı</div>
+              </div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:10px">
+              <span class="ext" onclick="openExt(event,'https://www.realself.com/dr/serkan-aygin-istanbul-turkey')">★ 4.9 · 6.281 (Dr. Visor)</span>
+              <span class="verified-line">✓ Doğrulandı</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Serkan Aygın Clinic (clinic) -->
+        <div class="card" data-type="clinic" onclick="toast('Serkan Aygın Clinic — aynı klinik şablonu')">
+          <div class="card-photo" style="background:linear-gradient(135deg,#ffd9cc,#ffbfa8)"><img class="brandmark" src="https://www.google.com/s2/favicons?sz=128&domain=drserkanaygin.com" alt="Serkan Aygın Clinic"><span class="type-badge">Klinik</span></div>
+          <div class="card-body">
+            <div class="name">Serkan Aygın Clinic</div>
+            <div class="meta" style="margin:2px 0 8px">İstanbul, Şişli · Key Plaza</div>
+            <div class="row" style="justify-content:space-between">
+              <span class="ext" onclick="openExt(event,'https://www.drserkanaygin.com')">★ 4.8 · 3.529 (TrustIndex)</span>
+              <span class="meta">Fiyat görüşmede netleşir</span>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:9px">
+              <span class="verified-line">✓ Faaliyet izinli</span>
+              <span class="ext" onclick="openExt(event,'https://www.drserkanaygin.com')">drserkanaygin.com</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Este doctor placeholder note -->
+        <div class="card" data-type="doctor" onclick="toast('Bu klinikte sahip/öne çıkan doktor doğrulanmadı → ayrı doktor profili açılmıyor')">
+          <div class="card-body">
+            <div class="row">
+              <div class="avatar round" style="opacity:.5">👤</div>
+              <div style="flex:1">
+                <div class="name" style="color:var(--muted)">İsim doğrulanacak</div>
+                <div class="meta">Kanıtlanana kadar profil açılmaz</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="toast('Tümünü gör — pagination sonraki faz')">Tüm klinikleri gör (7)</button>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. DOCTOR PROFILE (Emrah Cinik) ============ -->
+  <section class="screen" id="s-doctor">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-list')">←</button>
+      <div class="ttl">Doktor</div>
+      <button class="iconbtn" onclick="toast('Paylaş')">↗</button>
+    </div>
+    <div class="tabs" id="docTabs">
+      <button class="on" onclick="jump('d-ozet',this)">Özet</button>
+      <button onclick="jump('d-nitelik',this)">Nitelikler</button>
+      <button onclick="jump('d-video',this)">Videolar</button>
+      <button onclick="jump('d-deneyim',this)">Deneyimler</button>
+      <button onclick="jump('d-yorum',this)">Yorumlar</button>
+    </div>
+    <div class="scroll" id="docScroll">
+      <!-- Özet -->
+      <div class="section" id="d-ozet">
+        <div class="row">
+          <div class="avatar round" style="width:64px;height:64px;font-size:28px">👨‍⚕️</div>
+          <div style="flex:1">
+            <div class="name" style="font-size:20px">Dr. Emrah Cinik</div>
+            <div class="meta">Saç ekimi · 20+ yıl deneyim</div>
+            <div style="margin-top:6px"><span class="verified-line">✓ Faaliyet izinli</span></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b>20+</b><span>yıl deneyim</span></div>
+          <div class="stat"><b>50.000+</b><span>işlem</span></div>
+          <div class="stat"><b>ISHRS</b><span>sertifikalı</span></div>
+        </div>
+        <div class="row" style="gap:16px;margin:6px 0 16px">
+          <span class="ext" onclick="openExt(event,'https://www.realself.com/dr/emrah-cinik-besiktas-istanbul-turkey')">RealSelf · ★4.9 · 1.673 yorum</span>
+          <span class="ext" onclick="openExt(event,'https://www.emrahcinik.com')">emrahcinik.com</span>
+        </div>
+
+        <h4 style="color:var(--muted);font-size:14px;margin:0 0 8px">Uyguladığı klinik</h4>
+        <div class="link-card" onclick="go('s-clinic')">
+          <img class="avatar square logo-avatar" src="https://www.google.com/s2/favicons?sz=128&domain=emrahcinik.com" alt="Cinik Hospital">
+          <div><div class="name" style="font-size:15px">Cinik Hospital</div><div class="meta">İstanbul, Beşiktaş</div></div>
+          <div class="arw">→</div>
+        </div>
+
+        <h4 style="color:var(--muted);font-size:14px;margin:18px 0 8px">Konsültasyon</h4>
+        <div class="consult-grid">
+          <div class="consult"><div class="h">Online</div><div class="p">Ücretsiz · 30 dk</div></div>
+          <div class="consult"><div class="h">Yüz yüze</div><div class="p">Ücretsiz · 30 dk</div></div>
+        </div>
+      </div>
+
+      <!-- Nitelikler -->
+      <div class="section" id="d-nitelik">
+        <h2 style="margin-top:0">Nitelikler</h2>
+        <div class="kv">
+          <div><h4>Eğitim</h4><ul><li>Uludağ Üniversitesi Tıp Fakültesi, 2002</li><li>Villa Donatello Eğitim Programı, Floransa, 2011</li></ul></div>
+          <div><h4>Üyelikler / Dernekler</h4><ul><li>ISHRS üyesi</li><li>Düzenli kongre konuşmacısı</li></ul></div>
+          <div><h4>Uzmanlık teknikleri</h4><ul><li>FUE · Safir FUE · DHI · Tıraşsız</li><li>2007'de patentli FUE mikromotor tekniği</li></ul></div>
+          <div><h4>Kurum imkanları</h4><ul><li>Cinik Hospital (2019) · 28 ameliyathane</li><li>65 kişilik ekip · Londra takip ofisi</li></ul></div>
+          <div><h4>Ödüller</h4><div class="empty">Doğrulanmış ödül verisi henüz eklenmedi.</div></div>
+        </div>
+      </div>
+
+      <!-- Videolar -->
+      <div class="section" id="d-video">
+        <h2 style="margin-top:0">Videolar</h2>
+        <div style="display:flex;gap:12px;overflow-x:auto">
+          <div style="flex:none;width:150px" onclick="toast('Video oynat')">
+            <div style="height:96px;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#c76a52">▶</div>
+            <div style="font-size:13px;font-weight:600;margin-top:6px">Kendimi tanıtayım</div>
+          </div>
+          <div style="flex:none;width:150px" onclick="toast('Video oynat')">
+            <div style="height:96px;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#c76a52">▶</div>
+            <div style="font-size:13px;font-weight:600;margin-top:6px">Ameliyat günü nasıl geçer</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deneyimler -->
+      <div class="section" id="d-deneyim">
+        <h2 style="margin-top:0">Deneyimler</h2>
+        <div class="exp">
+          <div class="row" style="justify-content:space-between">
+            <div><div class="name" style="font-size:15px">Murat, 41, İstanbul</div><div class="meta">Ön çizgi · 1.330 greft</div></div>
+            <span class="tag">MEMNUN</span>
+          </div>
+          <div class="timeline">
+            <div class="pt"><b>70. gün</b>Şok dökülme başladı, beklediğim gibiymiş, panik yok.</div>
+            <div class="pt"><b>4. ay</b>Yeni çıkışlar ön çizgide belirginleşti.</div>
+            <div class="pt"><b>7. ay</b>Yoğunluk oturmaya başladı, çok doğal duruyor.</div>
+          </div>
+          <div class="prog-mini">Yolculuk devam ediyor · 9/12 durak</div>
+        </div>
+        <div class="exp">
+          <div class="row" style="justify-content:space-between">
+            <div><div class="name" style="font-size:15px">Kaan, 45, İstanbul</div><div class="meta">Şakak + tepe · devam ediyor</div></div>
+          </div>
+          <div class="timeline">
+            <div class="pt"><b>10. gün</b>Kabuklanma bitti, özel yıkama tamamlandı.</div>
+            <div class="pt"><b>1. ay</b>Kızarıklık geçti, henüz erken.</div>
+          </div>
+          <div class="prog-mini">Yolculuk devam ediyor · 3/12 durak</div>
+        </div>
+      </div>
+
+      <!-- Yorumlar -->
+      <div class="section" id="d-yorum">
+        <h2 style="margin-top:0">Yorumlar <span style="font-size:14px;color:var(--muted);font-weight:500">(RealSelf · 1.673)</span></h2>
+        <div class="review">
+          <div class="top"><span class="stars">★★★★★</span> · <span>8. ay sonrası</span> · <span class="worth">MEMNUN</span></div>
+          <p>Doktor tasarımı bizzat yaptı, sonuç beklentimin üstünde. Ekip süreç boyunca ulaşılabilirdi.</p>
+        </div>
+        <div class="review">
+          <div class="top"><span class="stars">★★★☆☆</span> · <span>görüşme öncesi</span> · <span class="worth crit">ELEŞTİREL</span></div>
+          <p>Doktorla görüşmeden önce kapora istenmesi beni rahatsız etti — önce muayene olmalıydı.</p>
+        </div>
+        <div class="review">
+          <div class="top"><span class="stars">★★★★☆</span> · <span>6. ay sonrası</span> · <span class="worth">MEMNUN</span></div>
+          <p>Sonuçtan memnunum. Tek not: şok dökülme dönemini önceden daha net anlatsalardı daha az endişelenirdim.</p>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+    <div class="sticky-cta">
+      <button class="btn btn-outline" onclick="toast('Konsültasyon talebi gönderildi')">Konsültasyon talep et</button>
+      <button class="btn btn-primary" onclick="go('s-compare')">Fiyat teklifi al</button>
+    </div>
+  </section>
+
+  <!-- ============ 5. CLINIC PROFILE (Cinik Hospital) ============ -->
+  <section class="screen" id="s-clinic">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-list')">←</button>
+      <div class="ttl">Klinik</div>
+      <button class="iconbtn" onclick="toast('Paylaş')">↗</button>
+    </div>
+    <div class="tabs" id="cliTabs">
+      <button class="on" onclick="jump('c-ozet',this)">Özet</button>
+      <button onclick="jump('c-ekip',this)">Ekip</button>
+      <button onclick="jump('c-olanak',this)">Olanaklar</button>
+      <button onclick="jump('c-foto',this)">Fotoğraflar</button>
+      <button onclick="jump('c-deneyim',this)">Deneyimler</button>
+      <button onclick="jump('c-yorum',this)">Yorumlar</button>
+    </div>
+    <div class="scroll" id="cliScroll">
+      <div class="card-photo" style="height:150px;border-radius:0"><img class="brandmark" style="width:80px;height:80px" src="https://www.google.com/s2/favicons?sz=128&domain=emrahcinik.com" alt="Cinik Hospital"></div>
+      <!-- Özet -->
+      <div class="section" id="c-ozet">
+        <div class="name" style="font-size:21px">Cinik Hospital</div>
+        <div class="meta" style="margin-top:2px">İstanbul, Beşiktaş · 2019'dan beri hizmet veriyor</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+          <span class="verified-line">✓ Faaliyet İzin Belgesi · İl Sağlık Müdürlüğü</span>
+        </div>
+        <div class="row" style="gap:16px;margin-bottom:14px">
+          <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/emrahcinik.com')">Trustpilot · ★4.9 · 5.800+ yorum</span>
+          <span class="ext" onclick="openExt(event,'https://www.emrahcinik.com')">emrahcinik.com</span>
+        </div>
+
+        <h4 style="color:var(--muted);font-size:14px;margin:0 0 8px">Konsültasyon</h4>
+        <div class="consult-grid">
+          <div class="consult"><div class="h">Online</div><div class="p">Ücretsiz · 30 dk</div></div>
+          <div class="consult"><div class="h">Yüz yüze</div><div class="p">Ücretsiz · 30 dk</div></div>
+        </div>
+
+        <h4 style="color:var(--muted);font-size:14px;margin:18px 0 6px">Hakkında</h4>
+        <p style="font-size:15px;line-height:1.6;margin:0">Cinik Hospital, <b>Dr. Emrah Cinik liderliğinde</b> saç ekimi ve estetik alanında hizmet veren bir sağlık kuruluşudur. 2019'da açılan Beşiktaş'taki tesisinde 28 ameliyathane ve 65 kişilik çok dilli ekiple çalışır; 50.000+ işlem gerçekleştirmiştir.</p>
+        <div class="meta" style="margin-top:12px">📍 Dikilitaş, Ayazmaderesi Cd. No:4, Beşiktaş / İstanbul</div>
+      </div>
+
+      <!-- Ekip -->
+      <div class="section" id="c-ekip">
+        <h2 style="margin-top:0">Ekip</h2>
+        <div class="lead-doc" onclick="go('s-doctor')">
+          <div class="avatar round" style="width:56px;height:56px;font-size:26px">👨‍⚕️</div>
+          <div style="flex:1"><div class="name">Dr. Emrah Cinik</div><div class="meta">Saç ekimi · 20+ yıl deneyim</div></div>
+          <div class="arw">→</div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="team-strip">
+          <div class="team-member"><div class="avatar round">👩‍⚕️</div><div class="tn">Elif K.</div><div class="tr">Koordinatör</div></div>
+          <div class="team-member"><div class="avatar round">🧑‍⚕️</div><div class="tn">Cem A.</div><div class="tr">Uygulama ekibi</div></div>
+          <div class="team-member"><div class="avatar round">👩‍⚕️</div><div class="tn">Deniz Y.</div><div class="tr">Uygulama ekibi</div></div>
+          <div class="team-member"><div class="avatar round">🧑‍⚕️</div><div class="tn">Barış T.</div><div class="tr">Hasta ilişkileri</div></div>
+        </div>
+      </div>
+
+      <!-- Olanaklar -->
+      <div class="section" id="c-olanak">
+        <h2 style="margin-top:0">Olanaklar</h2>
+        <ul style="margin:0;padding-left:18px;font-size:15px;line-height:1.7">
+          <li>28 ameliyathane · 65 kişilik ekip</li>
+          <li>Çok dilli ekip (TR / EN / AR)</li>
+          <li>Londra takip ofisi (operasyon sonrası)</li>
+          <li>Acil müdahale altyapısı</li>
+        </ul>
+      </div>
+
+      <!-- Fotoğraflar -->
+      <div class="section" id="c-foto">
+        <h2 style="margin-top:0">Fotoğraflar</h2>
+        <div class="chips" style="margin-bottom:12px">
+          <div class="chip on">Tümü</div>
+          <div class="chip">FUE · 183</div>
+          <div class="chip">DHI · 27</div>
+          <div class="chip">PRP · 2</div>
+        </div>
+        <div class="photo-grid">
+          <div></div><div></div><div></div><div></div><div></div><div></div>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:12px" onclick="window.open('https://www.emrahcinik.com/en/hair-transplant-results/','_blank','noopener')">Tüm sonuçları gör (emrahcinik.com) ↗</button>
+      </div>
+
+      <!-- Deneyimler -->
+      <div class="section" id="c-deneyim">
+        <h2 style="margin-top:0">Deneyimler</h2>
+        <div class="exp">
+          <div class="row" style="justify-content:space-between">
+            <div><div class="name" style="font-size:15px">Tarık, 38, Ankara</div><div class="meta">FUE · 3.200 greft</div></div>
+            <span class="tag">MEMNUN</span>
+          </div>
+          <div class="timeline">
+            <div class="pt"><b>2. ay</b>Şok dökülme yaşandı, klinik önceden anlatmıştı.</div>
+            <div class="pt"><b>9. ay</b>Nihai sonuca yaklaştım, çok doğal.</div>
+          </div>
+          <div class="prog-mini">Tamamlandı · 12/12 durak</div>
+        </div>
+      </div>
+
+      <!-- Yorumlar -->
+      <div class="section" id="c-yorum">
+        <h2 style="margin-top:0">Yorumlar <span style="font-size:14px;color:var(--muted);font-weight:500">(Trustpilot · 5.800+ — doktordan ayrı havuz)</span></h2>
+        <div class="review">
+          <div class="top"><span class="stars">★★★★★</span> · <span>Kurumsal yanıt</span> · <span class="worth">MEMNUN</span></div>
+          <p>Tesis çok temiz, karşılama mükemmeldi. Süreç boyunca WhatsApp hattı hep açıktı.</p>
+        </div>
+        <div class="review">
+          <div class="top"><span class="stars">★★★☆☆</span> · <span>görüşme öncesi</span> · <span class="worth crit">ELEŞTİREL</span></div>
+          <p>Randevu yoğunluğu fazla, bekleme süresi uzundu. Sonuç iyi ama organizasyon zorlandı.</p>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+    <div class="sticky-cta">
+      <button class="btn btn-outline" onclick="toast('Konsültasyon talebi gönderildi')">Konsültasyon talep et</button>
+      <button class="btn btn-primary" onclick="go('s-compare')">Fiyat teklifi al</button>
+    </div>
+  </section>
+
+  <!-- ============ 6. PACKAGE COMPARISON (Cosmedica) ============ -->
+  <section class="screen" id="s-compare">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-clinic')">←</button>
+      <div class="ttl">Paket karşılaştırma</div>
+      <button class="iconbtn" style="visibility:hidden">·</button>
+    </div>
+    <div class="scroll pad">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <p class="eyebrow" style="margin:0">Cosmedica · Dr. Levent Acar</p>
+        <span class="ext" onclick="openExt(event,'https://cosmedica.com')">cosmedica.com</span>
+      </div>
+      <h1 style="margin-top:4px;font-size:20px">Aynı klinik, 3 paket</h1>
+      <p class="sub">Her teklif aynı kalemlere dökülür — asıl fark <b>kimin, hangi aşamaya bizzat katıldığı</b>. Kuruluş 2007 · 20.000+ işlem · liste fiyatı €2.550'den başlar.</p>
+
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th></th>
+              <th>DHI Safir Mega</th>
+              <th>DHI Safir Mega Session</th>
+              <th>VIP DHI Safir Mega</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Fiyat</th>
+              <td class="big">122.000 TL</td>
+              <td class="big">€3.990</td>
+              <td class="big">€10.000</td>
+            </tr>
+            <tr>
+              <th>Sorumlu doktor</th>
+              <td><span class="flag">Klinik doktoru (isim doğrulanacak) — Dr. Acar değil</span></td>
+              <td>Dr. Acar — tasarım</td>
+              <td>Dr. Acar — tasarım + kanal açma</td>
+            </tr>
+            <tr>
+              <th>Anestezi türü</th>
+              <td>Lokal</td>
+              <td>Lokal</td>
+              <td>Lokal + sedasyon</td>
+            </tr>
+            <tr>
+              <th>Ek tedavi</th>
+              <td>—</td>
+              <td>PRP</td>
+              <td>PRP + kök hücre</td>
+            </tr>
+            <tr>
+              <th>Takip</th>
+              <td>12 ay</td>
+              <td>12 ay</td>
+              <td>12 ay</td>
+            </tr>
+            <tr>
+              <th>Garanti</th>
+              <td>Yazılı takip</td>
+              <td>Yazılı takip</td>
+              <td>Yazılı takip</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-card">
+        ⚠️ En ucuz pakette baş doktor <b>Dr. Acar değil</b>, kliniğin başka bir doktoru görev alıyor. Doktorun kanal açmaya bizzat girmesi yalnızca VIP pakette açık. Bu bilgi olmadan fiyat farkının nedeni görünmez.
+      </div>
+      <div class="note-card" style="background:var(--surface-2);color:var(--muted)">
+        ℹ️ Konaklama / transfer kalemleri (2.–3. pakette) yurt dışı hasta profiline özel — İstanbul'da yaşayan biri için değer katmaz. Fiyatlar netleşince ayrı gösterilecek.
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:18px" onclick="go('s-upsell')">Ek paketleri incele →</button>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- ============ 7. UPSELL ============ -->
+  <section class="screen" id="s-upsell">
+    <div class="topbar">
+      <button class="iconbtn" onclick="go('s-compare')">←</button>
+      <div class="ttl">Ek paketler</div>
+      <button class="iconbtn" style="visibility:hidden">·</button>
+    </div>
+    <div class="scroll pad">
+      <h1 style="font-size:20px">İstersen ekle</h1>
+      <p class="sub">Hiçbiri zorunlu değil, pakete dahil değil. 2 veya daha fazla seçersen otomatik paket indirimi uygulanır.</p>
+
+      <div class="addon" data-price="3000" onclick="toggleAddon(this)">
+        <div class="box"></div>
+        <div class="info"><div class="an">PRP seansı</div><div class="ad">Donör alanı güçlendirme</div></div>
+        <div class="ap">3.000 TL</div>
+      </div>
+      <div class="addon" data-price="8000" onclick="toggleAddon(this)">
+        <div class="box"></div>
+        <div class="info"><div class="an">Kök hücre uygulaması</div><div class="ad">Ek destekleyici tedavi</div></div>
+        <div class="ap">8.000 TL</div>
+      </div>
+      <div class="addon" data-price="1500" onclick="toggleAddon(this)">
+        <div class="box"></div>
+        <div class="info"><div class="an">Bakım seti</div><div class="ad">Şampuan + losyon (3 ay)</div></div>
+        <div class="ap">1.500 TL</div>
+      </div>
+      <div class="addon" data-price="2500" onclick="toggleAddon(this)">
+        <div class="box"></div>
+        <div class="info"><div class="an">Mikroneedling seansı</div><div class="ad">Mevcut kılları güçlendirme</div></div>
+        <div class="ap">2.500 TL</div>
+      </div>
+
+      <div class="summary" id="upSummary">
+        <div class="line"><span>Seçilen kalem</span><span id="upCount">0</span></div>
+        <div class="line" id="upDiscLine" style="display:none"><span class="disc">Paket indirimi (%10)</span><span class="disc" id="upDisc">0 TL</span></div>
+        <div class="line tot"><span>Toplam</span><span id="upTotal">0 TL</span></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="toast('Seçim teklife eklendi')">Teklife ekle</button>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  var scrollY = {};
+  function go(id){
+    var cur = document.querySelector('.screen.active');
+    if(cur) cur.classList.remove('active');
+    var el = document.getElementById(id);
+    el.classList.add('active');
+    var sc = el.querySelector('.scroll'); if(sc) sc.scrollTop = 0;
+    window.scrollTo(0,0);
+  }
+  // typeform single-select
+  function pick(btn){
+    var group = btn.closest('[data-single]');
+    group.querySelectorAll('.choice').forEach(c=>c.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
+  function pickMulti(btn){ btn.classList.toggle('sel'); }
+
+  // preselect Kaan's answers for demo realism
+  window.addEventListener('DOMContentLoaded',function(){
+    sel('#s-tf1 .choice'); // düz
+    document.querySelectorAll('#s-tf2 .choice')[0].classList.add('sel');
+    document.querySelectorAll('#s-tf2 .choice')[1].classList.add('sel');
+    document.querySelectorAll('#s-tf3 .choice')[0].classList.add('sel');
+    document.querySelectorAll('#s-tf4 .choice')[3].classList.add('sel');
+  });
+  function sel(q){var e=document.querySelector(q); if(e) e.classList.add('sel');}
+
+  // external link guard (reviews/website open separately, stop card nav)
+  function ext(e){ e.stopPropagation(); toast('Yorumlar · yeni sekmede açılır'); }
+  function openExt(e,url){ e.stopPropagation(); window.open(url,'_blank','noopener'); }
+
+  // discovery type filter
+  function filterType(btn,type){
+    btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('#listItems .card').forEach(function(c){
+      c.style.display = (type==='all'||c.dataset.type===type)?'':'none';
+    });
+  }
+
+  // profile anchor tabs
+  function jump(id,btn){
+    btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  // sync active tab on scroll
+  function bindScrollSpy(scrollId,tabsId,map){
+    var sc=document.getElementById(scrollId), tabs=document.getElementById(tabsId);
+    sc.addEventListener('scroll',function(){
+      var top=sc.scrollTop+130, active=0;
+      map.forEach(function(m,i){ var s=document.getElementById(m); if(s && s.offsetTop<=top) active=i; });
+      var btns=tabs.querySelectorAll('button');
+      btns.forEach(b=>b.classList.remove('on')); if(btns[active]) btns[active].classList.add('on');
+    });
+  }
+  window.addEventListener('DOMContentLoaded',function(){
+    bindScrollSpy('docScroll','docTabs',['d-ozet','d-nitelik','d-video','d-deneyim','d-yorum']);
+    bindScrollSpy('cliScroll','cliTabs',['c-ozet','c-ekip','c-olanak','c-foto','c-deneyim','c-yorum']);
+  });
+
+  // upsell
+  function toggleAddon(el){
+    el.classList.toggle('sel');
+    var sels=document.querySelectorAll('.addon.sel');
+    var sum=0; sels.forEach(a=>sum+=parseInt(a.dataset.price));
+    var disc = sels.length>=2 ? Math.round(sum*0.10) : 0;
+    document.getElementById('upCount').textContent=sels.length;
+    document.getElementById('upTotal').textContent=(sum-disc).toLocaleString('tr-TR')+' TL';
+    var dl=document.getElementById('upDiscLine');
+    if(disc>0){dl.style.display='';document.getElementById('upDisc').textContent='−'+disc.toLocaleString('tr-TR')+' TL';}
+    else dl.style.display='none';
+  }
+
+  // graceful fallback: any external image that fails to load hides itself
+  // (brandmark → brand gradient shows through; hero photo → gradient)
+  document.addEventListener('error',function(e){
+    if(e.target && e.target.tagName==='IMG'){ e.target.style.display='none'; }
+  },true);
+
+  // toast
+  var tT;
+  function toast(msg){
+    var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(tT); tT=setTimeout(()=>t.classList.remove('show'),2000);
+  }
+</script>
+</body>
+</html>
