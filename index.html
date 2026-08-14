@@ -231,6 +231,10 @@
   .cmp .big{font-size:16px;font-weight:800;}
   .cmp .flag{color:var(--warn-ink);font-weight:600;}
   .note-card{background:var(--warn-soft);border-radius:12px;padding:13px 14px;font-size:13px;color:var(--warn-ink);line-height:1.5;margin-top:14px;}
+  .aha{display:flex;gap:11px;background:var(--accent-soft);border:1.5px solid #f0c4b6;border-radius:14px;padding:14px;margin:2px 0 12px;font-size:13.5px;line-height:1.5;}
+  .aha .aha-ic{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;}
+  .aha .aha-ic svg.svgic{width:17px;height:17px;color:#fff;}
+  .scroll-hint{font-size:11.5px;color:var(--muted);margin:0 0 8px;display:flex;align-items:center;gap:5px;}
 
   /* upsell */
   .addon{display:flex;align-items:center;gap:13px;padding:15px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;margin-bottom:11px;}
@@ -260,8 +264,14 @@
   .hub-card{display:flex;align-items:center;gap:14px;padding:17px;border:1.5px solid var(--line);border-radius:16px;background:var(--surface);cursor:pointer;margin-bottom:12px;box-shadow:var(--shadow);transition:.15s;}
   .hub-card:active{transform:scale(.99);}
   .hub-card.primary{border-color:var(--accent);background:var(--accent-soft);}
-  .hub-ic{width:50px;height:50px;border-radius:13px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;}
+  .hub-ic{width:50px;height:50px;border-radius:13px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;color:var(--accent);}
   .hub-card.primary .hub-ic{background:#fff;}
+  .hub-ic svg.svgic{width:27px;height:27px;}
+  /* shared icon defaults */
+  svg.svgic{display:block;}
+  .avatar svg.svgic{width:58%;height:58%;color:#c08a70;}
+  .fab .spark svg.svgic{width:14px;height:14px;color:#fff;}
+  .iconbtn svg.svgic{width:20px;height:20px;color:var(--ink);}
   .hub-tx{flex:1;}
   .hub-tx b{font-size:16px;display:block;letter-spacing:-.01em;}
   .hub-tx span{font-size:12.5px;color:var(--muted);}
@@ -297,6 +307,16 @@
 </head>
 <body>
 <div id="frame">
+
+  <!-- Shared icon sprite (one visual language across the app) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="ic-clinic" viewBox="0 0 24 24"><path d="M5 21V9.2l7-4 7 4V21M9.2 21v-4.2h5.6V21M12 3v3.2M10.4 4.6h3.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11.8" r="1" fill="currentColor"/><circle cx="15" cy="11.8" r="1" fill="currentColor"/></symbol>
+    <symbol id="ic-guide" viewBox="0 0 24 24"><path d="M12 6.2c-2.1-1.4-5.2-1.4-7.5 0V19c2.3-1.4 5.4-1.4 7.5 0 2.1-1.4 5.2-1.4 7.5 0V6.2c-2.3-1.4-5.4-1.4-7.5 0zM12 6.2V19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7 5.6 1.3-5.6 1.4L12 17l-1.9-5.6-5.6-1.4 5.6-1.3z" fill="currentColor"/></symbol>
+    <symbol id="ic-map" viewBox="0 0 24 24"><path d="M12 21s6.5-5.2 6.5-10.5a6.5 6.5 0 10-13 0C5.5 15.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10.4" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="ic-doctor" viewBox="0 0 24 24"><circle cx="12" cy="8.4" r="4" fill="currentColor"/><path d="M4.6 20.5c0-4.3 3.4-6.7 7.4-6.7s7.4 2.4 7.4 6.7z" fill="currentColor"/></symbol>
+    <symbol id="ic-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
+  </svg>
 
   <!-- ============ 0. LAUNCHER (demo index) ============ -->
   <section class="screen active" id="s-home">
@@ -415,7 +435,7 @@
     </div>
     <div class="scroll pad">
       <div class="prefs-chip">
-        <span style="font-size:18px">🧠</span>
+        <span style="color:var(--accent);display:flex;flex:none"><svg class="svgic" style="width:22px;height:22px"><use href="#ic-spark"></use></svg></span>
         <div>Senin için: <b>Düz · Şakak + Tepe · Yakın zaman</b><div style="color:var(--muted);font-size:12px;margin-top:1px">Sıralama: sana uygunluk</div></div>
         <span class="edit" onclick="go('s-tf1')">Düzenle</span>
       </div>
@@ -423,17 +443,17 @@
       <p class="sub">Aklına takılanı istediğin an alttaki <b>Neome</b>'a sorabilirsin.</p>
 
       <div class="hub-card primary" onclick="go('s-list')">
-        <div class="hub-ic">🏥</div>
+        <div class="hub-ic"><svg class="svgic"><use href="#ic-clinic"></use></svg></div>
         <div class="hub-tx"><b>Doğrulanmış klinikleri keşfet</b><span>Sana uygunluğa göre sıralı, gerçek veriler</span></div>
         <div style="color:var(--accent);font-size:20px">→</div>
       </div>
       <div class="hub-card" onclick="go('s-guide')">
-        <div class="hub-ic">📖</div>
+        <div class="hub-ic"><svg class="svgic"><use href="#ic-guide"></use></svg></div>
         <div class="hub-tx"><b>Rehber</b><span>Nasıl karar verilir, neye dikkat edilir</span></div>
         <div style="color:var(--muted);font-size:20px">→</div>
       </div>
       <div class="hub-card" onclick="openNeome('Bağımsız bir bakış açısı için buradayım. Ne merak ediyorsun?')">
-        <div class="hub-ic">✦</div>
+        <div class="hub-ic"><svg class="svgic"><use href="#ic-spark"></use></svg></div>
         <div class="hub-tx"><b>Bağımsız uzmanla görüş</b><span>Şimdilik Neome; ileride gerçek uzman</span></div>
         <div style="color:var(--muted);font-size:20px">→</div>
       </div>
@@ -464,7 +484,7 @@
     <div class="topbar">
       <button class="iconbtn" onclick="go('s-hub')">←</button>
       <div class="ttl">Doğrulanmış klinikler</div>
-      <button class="iconbtn" onclick="toast('Harita — sonraki faz')">🗺️</button>
+      <button class="iconbtn" onclick="toast('Harita — sonraki faz')"><svg class="svgic"><use href="#ic-map"></use></svg></button>
     </div>
     <div class="scroll pad">
       <div class="segment" id="typeSeg">
@@ -478,7 +498,8 @@
         <div class="chip" onclick="this.classList.toggle('on')">DHI</div>
         <div class="chip" onclick="this.classList.toggle('on')">Robotik</div>
       </div>
-      <div class="sortbar"><span>Sıralama: <b>Sana uygunluk</b></span><span>7 sonuç</span></div>
+      <div class="sortbar"><span>Sıralama: <b>Sana uygunluk</b></span><span>6 sonuç</span></div>
+      <div style="font-size:11.5px;color:var(--muted);background:var(--surface-2);border-radius:9px;padding:9px 11px;margin:0 0 14px;line-height:1.45">★ puanlar bağımsız platformlardan (Trustpilot · RealSelf · Dr.Visor) derlenir; birebir aynı ölçek değildir — kaynağı görmek için dokun. Fiyatlar <b>paket başlangıç</b> değeridir.</div>
 
       <div id="listItems" style="display:flex;flex-direction:column;gap:14px">
 
@@ -503,7 +524,7 @@
         <div class="card" data-type="doctor" onclick="go('s-doctor')">
           <div class="card-body">
             <div class="row">
-              <div class="avatar round">👨‍⚕️</div>
+              <div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div>
               <div style="flex:1">
                 <div class="name">Dr. Emrah Cinik</div>
                 <div class="meta">Cinik Hospital · 20+ yıl deneyim</div>
@@ -523,7 +544,7 @@
             <div class="name">Cosmedica</div>
             <div class="meta" style="margin:2px 0 8px">İstanbul, Şişli · Dr. Levent Acar liderliğinde</div>
             <div class="row" style="justify-content:space-between">
-              <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/cosmedica.com')">★ 4.8 · 629 (WhatClinic)</span>
+              <span class="ext" onclick="openExt(event,'https://www.trustpilot.com/review/cosmedica.com')">★ 4.8 · Trustpilot</span>
               <span class="price">€2.550'den</span>
             </div>
             <div class="row" style="justify-content:space-between;margin-top:9px">
@@ -554,7 +575,7 @@
         <div class="card" data-type="doctor" onclick="toast('Dr. Serkan Aygın profili — aynı doktor şablonu')">
           <div class="card-body">
             <div class="row">
-              <div class="avatar round">👨‍⚕️</div>
+              <div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div>
               <div style="flex:1">
                 <div class="name">Dr. Serkan Aygın</div>
                 <div class="meta">Serkan Aygın Clinic · Dermatoloji uzmanı</div>
@@ -588,7 +609,7 @@
         <div class="card" data-type="doctor" onclick="toast('Bu klinikte sahip/öne çıkan doktor doğrulanmadı → ayrı doktor profili açılmıyor')">
           <div class="card-body">
             <div class="row">
-              <div class="avatar round" style="opacity:.5">👤</div>
+              <div class="avatar round" style="opacity:.45"><svg class="svgic"><use href="#ic-doctor"></use></svg></div>
               <div style="flex:1">
                 <div class="name" style="color:var(--muted)">İsim doğrulanacak</div>
                 <div class="meta">Kanıtlanana kadar profil açılmaz</div>
@@ -599,7 +620,7 @@
 
       </div>
 
-      <button class="btn btn-ghost" style="margin-top:16px" onclick="toast('Tümünü gör — pagination sonraki faz')">Tüm klinikleri gör (7)</button>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="toast('Tümünü gör — pagination sonraki faz')">Tüm klinikleri gör (6)</button>
       <div class="spacer"></div>
     </div>
   </section>
@@ -622,7 +643,7 @@
       <!-- Özet -->
       <div class="section" id="d-ozet">
         <div class="row">
-          <div class="avatar round" style="width:64px;height:64px;font-size:28px">👨‍⚕️</div>
+          <div class="avatar round" style="width:64px;height:64px;font-size:28px"><svg class="svgic"><use href="#ic-doctor"></use></svg></div>
           <div style="flex:1">
             <div class="name" style="font-size:20px">Dr. Emrah Cinik</div>
             <div class="meta">Saç ekimi · 20+ yıl deneyim</div>
@@ -668,16 +689,8 @@
       <!-- Videolar -->
       <div class="section" id="d-video">
         <h2 style="margin-top:0">Videolar</h2>
-        <div style="display:flex;gap:12px;overflow-x:auto">
-          <div style="flex:none;width:150px" onclick="toast('Video oynat')">
-            <div style="height:96px;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#c76a52">▶</div>
-            <div style="font-size:13px;font-weight:600;margin-top:6px">Kendimi tanıtayım</div>
-          </div>
-          <div style="flex:none;width:150px" onclick="toast('Video oynat')">
-            <div style="height:96px;background:linear-gradient(135deg,#ffd9cc,#ffbfa8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#c76a52">▶</div>
-            <div style="font-size:13px;font-weight:600;margin-top:6px">Ameliyat günü nasıl geçer</div>
-          </div>
-        </div>
+        <div class="empty" style="display:flex;align-items:center;gap:10px"><span style="color:var(--muted);display:flex"><svg class="svgic" style="width:20px;height:20px"><use href="#ic-play"></use></svg></span> Doğrulanmış video henüz Yeniben'e eklenmedi. Kliniğin tanıtım içerikleri kendi sitesinde yer alıyor.</div>
+        <button class="btn btn-ghost" style="margin-top:10px" onclick="window.open('https://www.emrahcinik.com/en/','_blank','noopener')">Kliniğin sitesine git ↗</button>
       </div>
 
       <!-- Deneyimler -->
@@ -775,16 +788,16 @@
       <div class="section" id="c-ekip">
         <h2 style="margin-top:0">Ekip</h2>
         <div class="lead-doc" onclick="go('s-doctor')">
-          <div class="avatar round" style="width:56px;height:56px;font-size:26px">👨‍⚕️</div>
+          <div class="avatar round" style="width:56px;height:56px;font-size:26px"><svg class="svgic"><use href="#ic-doctor"></use></svg></div>
           <div style="flex:1"><div class="name">Dr. Emrah Cinik</div><div class="meta">Saç ekimi · 20+ yıl deneyim</div></div>
           <div class="arw">→</div>
         </div>
         <div style="height:16px"></div>
         <div class="team-strip">
-          <div class="team-member"><div class="avatar round">👩‍⚕️</div><div class="tn">Elif K.</div><div class="tr">Koordinatör</div></div>
-          <div class="team-member"><div class="avatar round">🧑‍⚕️</div><div class="tn">Cem A.</div><div class="tr">Uygulama ekibi</div></div>
-          <div class="team-member"><div class="avatar round">👩‍⚕️</div><div class="tn">Deniz Y.</div><div class="tr">Uygulama ekibi</div></div>
-          <div class="team-member"><div class="avatar round">🧑‍⚕️</div><div class="tn">Barış T.</div><div class="tr">Hasta ilişkileri</div></div>
+          <div class="team-member"><div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div><div class="tn">Elif K.</div><div class="tr">Koordinatör</div></div>
+          <div class="team-member"><div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div><div class="tn">Cem A.</div><div class="tr">Uygulama ekibi</div></div>
+          <div class="team-member"><div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div><div class="tn">Deniz Y.</div><div class="tr">Uygulama ekibi</div></div>
+          <div class="team-member"><div class="avatar round"><svg class="svgic"><use href="#ic-doctor"></use></svg></div><div class="tn">Barış T.</div><div class="tr">Hasta ilişkileri</div></div>
         </div>
       </div>
 
@@ -802,13 +815,14 @@
       <!-- Fotoğraflar -->
       <div class="section" id="c-foto">
         <h2 style="margin-top:0">Fotoğraflar</h2>
-        <div class="chips" style="margin-bottom:12px">
-          <div class="chip on">Tümü</div>
+        <div class="chips" style="margin-bottom:10px">
+          <div class="chip on">Tümü · 212</div>
           <div class="chip">FUE · 183</div>
           <div class="chip">DHI · 27</div>
           <div class="chip">PRP · 2</div>
         </div>
-        <div class="photo-grid">
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">Önizleme — gerçek öncesi/sonrası galerisi klinik sitesinde doğrulanır.</div>
+        <div class="photo-grid" onclick="window.open('https://www.emrahcinik.com/en/hair-transplant-results/','_blank','noopener')" style="cursor:pointer">
           <div></div><div></div><div></div><div></div><div></div><div></div>
         </div>
         <button class="btn btn-ghost" style="margin-top:12px" onclick="window.open('https://www.emrahcinik.com/en/hair-transplant-results/','_blank','noopener')">Tüm sonuçları gör (emrahcinik.com) ↗</button>
@@ -865,6 +879,12 @@
       <h1 style="margin-top:4px;font-size:20px">Aynı klinik, 3 paket</h1>
       <p class="sub">Her teklif aynı kalemlere dökülür — asıl fark <b>kimin, hangi aşamaya bizzat katıldığı</b>. Kuruluş 2007 · 20.000+ işlem · liste fiyatı €2.550'den başlar.</p>
 
+      <div class="aha">
+        <div class="aha-ic"><svg class="svgic"><use href="#ic-spark"></use></svg></div>
+        <div><b>Fiyatı belirleyen asıl kalem:</b> baş doktorun bizzat katıldığı aşama. En ucuz pakette (122.000 TL) <b>Dr. Acar yok</b> — kliniğin başka bir doktoru uyguluyor. Acar'ın bizzat kanal açtığı tek paket VIP. Bu bilgi olmadan fiyat farkının nedeni görünmez.</div>
+      </div>
+      <div class="scroll-hint">Kalemleri görmek için tabloyu yana kaydır →</div>
+
       <div class="cmp-wrap">
         <table class="cmp">
           <thead>
@@ -916,9 +936,6 @@
         </table>
       </div>
 
-      <div class="note-card">
-        ⚠️ En ucuz pakette baş doktor <b>Dr. Acar değil</b>, kliniğin başka bir doktoru görev alıyor. Doktorun kanal açmaya bizzat girmesi yalnızca VIP pakette açık. Bu bilgi olmadan fiyat farkının nedeni görünmez.
-      </div>
       <div class="note-card" style="background:var(--surface-2);color:var(--muted)">
         ℹ️ Konaklama / transfer kalemleri (2.–3. pakette) yurt dışı hasta profiline özel — İstanbul'da yaşayan biri için değer katmaz. Fiyatlar netleşince ayrı gösterilecek.
       </div>
@@ -971,7 +988,7 @@
   </section>
 
   <!-- Persistent Neome assistant -->
-  <button class="fab" onclick="openNeome()"><span class="spark">✦</span> Neome'a sor</button>
+  <button class="fab" onclick="openNeome()"><span class="spark"><svg class="svgic"><use href="#ic-spark"></use></svg></span> Neome'a sor</button>
   <div class="scrim" id="scrim" onclick="closeNeome()"></div>
   <div class="sheet" id="sheet">
     <div class="grip"></div>
